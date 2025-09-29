@@ -68,8 +68,8 @@ public class EnvironmentController : MonoBehaviour
             return;
             
         // 計算移動速度
-        float forwardVelocity = -forwardSpeed * (lever.value ? 1 : 0);
-        float sideVelocity = sideSpeed * (lever.value ? 1 : 0) * Mathf.Lerp(1,-1,knob.value);
+        float forwardVelocity = -forwardSpeed * lever.value;
+        float sideVelocity = sideSpeed * lever.value * Mathf.Lerp(1,-1,knob.value);
 
         Vector3 velocity = new Vector3(sideVelocity,0,forwardVelocity);
         transform.position += velocity * Time.deltaTime;

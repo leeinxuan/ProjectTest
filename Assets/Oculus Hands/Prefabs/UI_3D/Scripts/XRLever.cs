@@ -15,8 +15,8 @@ namespace UnityEngine.XR.Content.Interaction
         Transform m_Handle = null;
 
         [SerializeField]
-        [Tooltip("The value of the lever")]
-        bool m_Value = false;
+        [Tooltip("The value of the lever (0.0 = off, 1.0 = on)")]
+        float m_Value = 0.5f;
 
         [SerializeField]
         [Tooltip("If enabled, the lever will snap to the value position when released")]
@@ -52,12 +52,12 @@ namespace UnityEngine.XR.Content.Interaction
         }
 
         /// <summary>
-        /// The value of the lever
+        /// The value of the lever (0.0 = off, 1.0 = on)
         /// </summary>
-        public bool value
+        public float value
         {
             get => m_Value;
-            set => SetValue(value, true);
+            set => SetValue(Mathf.Clamp01(value), true);
         }
 
         /// <summary>
@@ -119,7 +119,8 @@ namespace UnityEngine.XR.Content.Interaction
 
         void EndGrab(SelectExitEventArgs args)
         {
-            SetValue(m_Value, true);
+            // 當釋放桿子時，將桿子吸附到對應的固定角度
+            SnapToDiscretePosition();
             m_Interactor = null;
         }
 
@@ -155,44 +156,89 @@ namespace UnityEngine.XR.Content.Interaction
             else
                 lookAngle = Mathf.Clamp(lookAngle, m_MaxAngle, m_MinAngle);
 
-            var maxAngleDistance = Mathf.Abs(m_MaxAngle - lookAngle);
-            var minAngleDistance = Mathf.Abs(m_MinAngle - lookAngle);
-
-            if (m_Value)
-                maxAngleDistance *= (1.0f - k_LeverDeadZone);
+            // 計算角度範圍的三個區域
+            float angleRange = Mathf.Abs(m_MaxAngle - m_MinAngle);
+            float normalizedAngle;
+            
+            if (m_MinAngle < m_MaxAngle)
+            {
+                normalizedAngle = Mathf.InverseLerp(m_MinAngle, m_MaxAngle, lookAngle);
+            }
             else
-                minAngleDistance *= (1.0f - k_LeverDeadZone);
+            {
+                normalizedAngle = Mathf.InverseLerp(m_MaxAngle, m_MinAngle, lookAngle);
+            }
 
-            var newValue = (maxAngleDistance < minAngleDistance);
+            // 將連續值轉換為三個固定值：0, 0.5, 1
+            float discreteValue;
+            if (normalizedAngle < 0.33f)
+                discreteValue = 0f;      // 後退
+            else if (normalizedAngle < 0.67f)
+                discreteValue = 0.5f;    // 停止
+            else
+                discreteValue = 1f;      // 前進
 
-            SetHandleAngle(lookAngle);
-
-            SetValue(newValue);
+            // 設置桿子到對應的固定角度，而不是跟隨滑鼠位置
+            SetValue(discreteValue, true);
         }
 
-        void SetValue(bool isOn, bool forceRotation = false)
+        void SetValue(float newValue, bool forceRotation = false)
         {
-            if (m_Value == isOn)
+            newValue = Mathf.Clamp01(newValue);
+            
+            if (Mathf.Approximately(m_Value, newValue))
             {
                 if (forceRotation)
-                    SetHandleAngle(m_Value ? m_MaxAngle : m_MinAngle);
-
+                {
+                    SnapToDiscretePosition();
+                }
                 return;
             }
 
-            m_Value = isOn;
+            float oldValue = m_Value;
+            m_Value = newValue;
 
-            if (m_Value)
+            // 觸發事件：只有當從非啟用狀態變為啟用狀態時才觸發啟用事件
+            // 或者從啟用狀態變為非啟用狀態時觸發停用事件
+            bool wasOn = oldValue > 0.5f;
+            bool isNowOn = newValue > 0.5f;
+            
+            if (!wasOn && isNowOn)
             {
                 m_OnLeverActivate.Invoke();
             }
-            else
+            else if (wasOn && !isNowOn)
             {
                 m_OnLeverDeactivate.Invoke();
             }
 
             if (!isSelected && (m_LockToValue || forceRotation))
-                SetHandleAngle(m_Value ? m_MaxAngle : m_MinAngle);
+            {
+                SnapToDiscretePosition();
+            }
+        }
+
+        void SnapToDiscretePosition()
+        {
+            float targetAngle;
+            
+            if (m_Value == 0f)
+            {
+                // 後退位置：最小角度
+                targetAngle = m_MinAngle;
+            }
+            else if (m_Value == 0.5f)
+            {
+                // 停止位置：中間角度
+                targetAngle = (m_MinAngle + m_MaxAngle) / 2f;
+            }
+            else // m_Value == 1f
+            {
+                // 前進位置：最大角度
+                targetAngle = m_MaxAngle;
+            }
+            
+            SetHandleAngle(targetAngle);
         }
 
         void SetHandleAngle(float angle)
@@ -222,7 +268,7 @@ namespace UnityEngine.XR.Content.Interaction
 
         void OnValidate()
         {
-            SetHandleAngle(m_Value ? m_MaxAngle : m_MinAngle);
+            SnapToDiscretePosition();
         }
     }
 }

@@ -22,7 +22,7 @@ public class CarController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("EnvironmentController: Start方法開始執行");
+        Debug.Log("CarController: Start方法開始執行");
         // 自動查找XRCar物件
         if (xrCarObject == null)
         {
@@ -30,7 +30,7 @@ public class CarController : MonoBehaviour
             if (xrCar != null)
             {
                 xrCarObject = xrCar.transform;
-                Debug.Log("EnvironmentController: 自動找到XRCar物件");
+                Debug.Log("CarController: 自動找到XRCar物件");
             }
         }
         
@@ -41,7 +41,7 @@ public class CarController : MonoBehaviour
             if (xrOriginObj != null)
             {
                 xrOrigin = xrOriginObj.transform;
-                Debug.Log("EnvironmentController: 自動找到XR Origin");
+                Debug.Log("CarController: 自動找到XR Origin");
             }
         }
         
@@ -50,14 +50,14 @@ public class CarController : MonoBehaviour
         {
             lever = FindObjectOfType<XRLever>();
             if (lever != null)
-                Debug.Log("EnvironmentController: 自動找到XRLever");
+                Debug.Log("CarController: 自動找到XRLever");
         }
         
         if (knob == null)
         {
             knob = FindObjectOfType<XRKnob>();
             if (knob != null)
-                Debug.Log("EnvironmentController: 自動找到XRKnob");
+                Debug.Log("CarController: 自動找到XRKnob");
         }
     }
 
@@ -68,8 +68,9 @@ public class CarController : MonoBehaviour
             return;
             
         // 計算移動速度
-        float forwardVelocity = -forwardSpeed * (lever.value ? 1 : 0);
-        float sideVelocity = sideSpeed * (lever.value ? 1 : 0) * Mathf.Lerp(1,-1,knob.value);
+        // lever.value: 0.0=後退, 0.5=停止, 1.0=前進
+        float forwardVelocity = -forwardSpeed * (lever.value - 0.5f) * 2f;
+        float sideVelocity = sideSpeed * Mathf.Abs(lever.value - 0.5f) * 2f * Mathf.Lerp(1,-1,knob.value);
 
         Vector3 velocity = new Vector3(sideVelocity,0,forwardVelocity);
         transform.position += velocity * Time.deltaTime;
