@@ -716,7 +716,7 @@ MonoBehaviour:
   m_Camera: {fileID: 380872749}
   m_OriginBaseGameObject: {fileID: 497169695}
   m_CameraFloorOffsetObject: {fileID: 215842910}
-  m_RequestedTrackingOriginMode: 2
+  m_RequestedTrackingOriginMode: 1
   m_CameraYOffset: 1.1176
 --- !u!4 &497169698
 Transform:
@@ -785,6 +785,10 @@ PrefabInstance:
     - target: {fileID: 6598815579406187037, guid: 18ddb545287c546e19cc77dc9fbb2189, type: 3}
       propertyPath: m_Name
       value: XR Device Simulator
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598815579406187037, guid: 18ddb545287c546e19cc77dc9fbb2189, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1421,6 +1425,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 6379284649295316696, guid: 6c5342a3838a0964ea8d2d04ac86b853, type: 3}
+    - {fileID: 4603006378872522094, guid: 6c5342a3838a0964ea8d2d04ac86b853, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6c5342a3838a0964ea8d2d04ac86b853, type: 3}
@@ -1433,7 +1438,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1353690440}
-  - component: {fileID: 1353690441}
   m_Layer: 0
   m_Name: XRCar
   m_TagString: Untagged
@@ -1458,24 +1462,6 @@ Transform:
   - {fileID: 497169698}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1353690441
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1353690439}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b21e6c98edfeb3a43909d10b9a1af2bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lever: {fileID: 0}
-  knob: {fileID: 0}
-  forwardSpeed: 3
-  sideSpeed: 1
-  xrCarObject: {fileID: 0}
-  xrOrigin: {fileID: 0}
 --- !u!4 &1603622580 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2350150222763399675, guid: 6c5342a3838a0964ea8d2d04ac86b853, type: 3}
