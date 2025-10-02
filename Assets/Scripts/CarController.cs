@@ -11,7 +11,7 @@ public class CarController : MonoBehaviour
     
     [Header("移動參數")]
     public float forwardSpeed = 3f;
-    public float sideSpeed = 1f;
+    public float turnSpeed = 20f;
     
     [Header("XR Car 設置")]
     public Transform xrCarObject;
@@ -67,13 +67,20 @@ public class CarController : MonoBehaviour
         if (lever == null || knob == null)
             return;
             
-        // 計算移動速度
         // lever.value: 0.0=後退, 0.5=停止, 1.0=前進
+        // 節流量（速度比例 0~1）
+        float throttle = Mathf.Abs(lever.value - 0.5f) * 2f;
+        // 帶符號的前進速度（世界單位/秒）
         float forwardVelocity = -forwardSpeed * (lever.value - 0.5f) * 2f;
-        float sideVelocity = sideSpeed * Mathf.Abs(lever.value - 0.5f) * 2f * Mathf.Lerp(1,-1,knob.value);
+        // 旋鈕輸入映射為 -1（右）到 1（左），決定轉向方向
+        float turnInput = Mathf.Lerp(-1f, 1f, knob.value);
+        // 本幀旋轉角度（度），隨油門比例縮放
+        float yawDelta = turnSpeed * turnInput * throttle * Time.deltaTime;
 
-        Vector3 velocity = new Vector3(sideVelocity,0,forwardVelocity);
-        transform.position += velocity * Time.deltaTime;
+        // 應用轉向（本地 Y 軸）
+        transform.Rotate(0f, yawDelta, 0f, Space.Self);
+        // 應用前進（沿物件前方）
+        transform.position += transform.forward * forwardVelocity * Time.deltaTime;
         // // 移動XRCar物件
         // if (xrCarObject != null)
         // {
